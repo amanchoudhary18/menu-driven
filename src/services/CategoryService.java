@@ -2,9 +2,13 @@ package services;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger; // Import the AtomicInteger class
 
 public class CategoryService {
     private static HashMap<Integer, String> categoryMap = new HashMap<>();
+
+    // Initialize Atomic Integer with the last existing ID
+    private static AtomicInteger nextId = new AtomicInteger(4);
 
     static {
         categoryMap.put(1, "Gadgets");
@@ -17,13 +21,8 @@ public class CategoryService {
         return categoryMap;
     }
 
-    public String getCategoryNameById(int id) {
-        return categoryMap.get(id);
-    }
-
     public void addCategory(String name) {
-        categoryMap.put(categoryMap.size() + 1, name);
+        int newId = nextId.incrementAndGet(); // Get the next available ID
+        categoryMap.put(newId, name);
     }
-
-
 }

@@ -1,18 +1,21 @@
 package services;
+
 import dto.*;
+
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProductService {
 
-    // Comparator inner class for price
+    // comparator inner class for price
     static class PriceComparator implements Comparator<Product> {
         public int compare(Product p1, Product p2) {
             return Double.compare(p1.getPrice(), p2.getPrice());
         }
     }
 
-    // Comparator inner class for name
+    // comparator inner class for name
     static class AlphabeticComparator implements Comparator<Product> {
         public int compare(Product p1, Product p2) {
             return p1.getName().compareTo(p2.getName());
@@ -21,6 +24,10 @@ public class ProductService {
 
     // product static list
     private static ArrayList<Product> products = new ArrayList<>();
+
+    // initializing atomic integer for auto increment id
+    private static AtomicInteger nextId = new AtomicInteger(10);
+
 
     // static list dummy data
     static {
@@ -60,12 +67,11 @@ public class ProductService {
         return product;
     }
 
-// fetch products by category
+    // fetch products by category
     public ArrayList<Product> getProductsByCategory(int categoryId) {
         ArrayList<Product> productsByCategory = new ArrayList<>();
 
         for (Product product : products) {
-
             if (product.getCategoryId() == categoryId) {
                 productsByCategory.add(product);
             }
@@ -92,7 +98,7 @@ public class ProductService {
         System.out.println(tableHeader.replaceAll(".", "-"));
         for (int i = 0; i < products.size(); i++) {
             Product product = products.get(i);
-            System.out.println("| " + String.format("%-10s", (i + 1)) + "| " + String.format("%-30s", product.getName()) + " | " + String.format("%-30s", "$ "+product.getPrice()));
+            System.out.println("| " + String.format("%-10s", (i + 1)) + "| " + String.format("%-30s", product.getName()) + " | " + String.format("%-30s", "$ " + product.getPrice()));
 
         }
         System.out.println();
@@ -153,6 +159,23 @@ public class ProductService {
         }
 
         return searchedProducts;
+    }
+
+    //filter products based on price
+    public ArrayList<Product> filterProducts(double min,double max) throws Exception{
+
+        if(min>max){
+            throw new Exception("Maximum price cannot be less than minimum price.");
+        }
+
+        ArrayList<Product> filteredProducts = new ArrayList<>();
+        for (Product product : products) {
+            if (product.getPrice()>=min  && product.getPrice()<=max) {
+                filteredProducts.add(product);
+            }
+        }
+
+        return filteredProducts;
     }
 
 

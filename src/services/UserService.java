@@ -1,5 +1,7 @@
 package services;
+
 import dto.*;
+
 import java.util.*;
 import java.util.logging.*;
 import java.util.regex.*;
@@ -10,6 +12,8 @@ public class UserService {
     private final static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     // static user database
     static HashMap<String, User> userMap = new HashMap<>();
+    private final static String EMAIL_REGEX = "^[a-zA-Z0-9_!#$%&’*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
+    private final static String SECRET_KEY = "E-Comm#Fastenal";
 
     // dummy user data
     static {
@@ -20,14 +24,16 @@ public class UserService {
     // validate email using regex
     public boolean validateEmail(String email) {
         // initializing regex
-        String EMAIL_REGEX = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
         Pattern pattern = Pattern.compile(EMAIL_REGEX);
 
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
     }
 
-    public boolean emailAlreadyExists(String email) {
+    public boolean emailAlreadyExists(String email) throws Exception{
+        if(email.isEmpty()){
+            throw new Exception("Email field cannot be empty");
+        }
         return userMap.containsKey(email.toLowerCase());
     }
 
@@ -75,7 +81,8 @@ public class UserService {
     }
 
     public User register(String name, String email, String password, String secretKey) throws Exception {
-        if (!secretKey.equals("E-Comm#Fastenal")) {
+
+        if (!secretKey.equals(SECRET_KEY)) {
             throw new Exception("The company key is invalid");
         }
         User user = new User(name, email.toLowerCase(), password, true);
@@ -85,9 +92,9 @@ public class UserService {
     }
 
 
-    public User login(String email, String password) throws Exception{
+    public User login(String email, String password) throws Exception {
         User user = userMap.get(email);
-        if(user==null){
+        if (null == user) {
             throw new Exception("Email does not exist !!");
         }
         if (user.getPassword().equals(password)) {
@@ -104,13 +111,16 @@ public class UserService {
 
         ArrayList<CartElement> cart = user.getCart();
 
+        if(quantity<1){
+            throw new Error("Quantity cannot be less than 1");
+        }
+
         for (CartElement cartElement : cart) {
             if (cartElement.getProductId() == id) {
                 cartElement.addQuantity(quantity);
                 return;
             }
         }
-
 
         if (product != null) {
             CartElement cartElement = new CartElement(id, quantity);
@@ -120,14 +130,22 @@ public class UserService {
             throw new Exception("Incorrect Product ID");
         }
 
-
     }
 
-    public void removeFromCart(int productId, User user) {
+    public void removeFromCart(int productId, User user) throws Exception{
 
         ArrayList<CartElement> cart = user.getCart();
 
+        if(null == cart){
+            throw new Error("Error while fetching the cart.");
+        }
+
         for (int i = 0; i < cart.size(); i++) {
+            if(null == cart.get(i)){
+                throw new Error("Cart element does not exist");
+            }
+
+
             if (cart.get(i).getProductId() == productId) {
                 cart.remove(i);
                 break;
@@ -137,8 +155,8 @@ public class UserService {
         user.setCart(cart);
 
     }
-// handle exception
-    public void showCartDetails(User user) {
+
+    public void showCartDetails(User user) throws Exception{
         System.out.println(user.getName());
         ArrayList<CartElement> cart = user.getCart();
         ProductService productService = new ProductService();
@@ -148,26 +166,31 @@ public class UserService {
         } else {
             double totalAmt = 0;
 
-            String tableHeader = "| " + String.format("%-30s", "Item Name") + " | " + String.format("%-10s", "Quantity") + " | " + String.format("%-30s", "Price") + " |" +  String.format("%-30s", "Total Price") + " |";
-            System.out.println(tableHeader.replaceAll(".","-"));
+            String tableHeader = "| " + String.format("%-30s", "Item Name") + " | " + String.format("%-10s", "Quantity") + " | " + String.format("%-30s", "Price") + " |" + String.format("%-30s", "Total Price") + " |";
+            System.out.println(tableHeader.replaceAll(".", "-"));
             System.out.println(tableHeader);
-            System.out.println(tableHeader.replaceAll(".","-"));
+            System.out.println(tableHeader.replaceAll(".", "-"));
 
             for (CartElement cartElement : cart) {
                 Product product = productService.getProductById(cartElement.getProductId());
+
+                if(null==product){
+                    throw new Exception("Error occurred while fetching products from cart. Try again");
+                }
+
                 int quantity = cartElement.getQuantity();
-                System.out.println("| " + String.format("%-30s",product.getName()) + " | " + String.format("%-10s", quantity) + " | " + String.format("%-30s", product.getPrice()) + " |" +  String.format("%-30s", product.getPrice()*quantity) + " |");
+                System.out.println("| " + String.format("%-30s", product.getName()) + " | " + String.format("%-10s", quantity) + " | " + String.format("%-30s", product.getPrice()) + " |" + String.format("%-30s", product.getPrice() * quantity) + " |");
                 totalAmt += product.getPrice() * quantity;
             }
 
-            System.out.println(tableHeader.replaceAll(".","-"));
+            System.out.println(tableHeader.replaceAll(".", "-"));
             System.out.println("Total Amount - " + "$" + totalAmt);
-            System.out.println(tableHeader.replaceAll(".","-"));
+            System.out.println(tableHeader.replaceAll(".", "-"));
             System.out.println();
         }
     }
 
-    public void checkoutCart(User user) {
+    public void checkoutCart(User user) throws Exception{
 
         ArrayList<CartElement> cart = user.getCart();
         ProductService productService = new ProductService();
@@ -175,6 +198,9 @@ public class UserService {
         double totalAmt = 0;
         for (CartElement cartElement : cart) {
             Product product = productService.getProductById(cartElement.getProductId());
+            if(null==product){
+                throw new Exception("Error occurred while fetching products from cart. Try again");
+            }
             int quantity = cartElement.getQuantity();
             totalAmt += product.getPrice() * quantity;
         }
@@ -195,17 +221,18 @@ public class UserService {
 
         String tableHeader = "| " + String.format("%-30s", "Name") + " | " + String.format("%-30s", "Email") + " | " + String.format("%-10s", "Role") + " |";
 
-        System.out.println(tableHeader.replaceAll(".","-"));
+        System.out.println(tableHeader.replaceAll(".", "-"));
         System.out.println(tableHeader);
-        System.out.println(tableHeader.replaceAll(".","-"));
+        System.out.println(tableHeader.replaceAll(".", "-"));
 
 
         for (Map.Entry<String, User> entry : userMap.entrySet()) {
             User user = entry.getValue();
-            System.out.println("| " + String.format("%-30s", user.getName()) + " | " + String.format("%-30s", user.getEmail()) + " | " + String.format("%-10s", user.getIsAdmin()?"Admin":"Customer") + " |");
+            System.out.println("| " + String.format("%-30s", user.getName()) + " | " + String.format("%-30s", user.getEmail()) + " | " + String.format("%-10s", user.getIsAdmin() ? "Admin" : "Customer") + " |");
         }
 
 
     }
 
 }
+

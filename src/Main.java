@@ -146,7 +146,7 @@ public class Main {
                         System.out.println("Successfully registered. !!");
                         homeMenu();
 
-                        accountMenu=false;
+                        accountMenu = false;
 
                         break;
                     }
@@ -238,11 +238,49 @@ public class Main {
         System.out.println("\n## ENTER YOUR LOGIN DETAILS ##\n");
 
         try {
-            System.out.print("Enter your email : ");
-            String enteredEmail = in.nextLine();
 
+            boolean emailInput = true;
+            String enteredEmail = null;
+            System.out.print("Enter your email : ");
+            while (emailInput) {
+                enteredEmail = in.nextLine();
+
+                if (!userService.validateEmail(enteredEmail)) {
+                    LOGGER.log(Level.WARNING, "Input email was invalid");
+                    System.out.print("Please enter a valid email : ");
+                    continue;
+                }
+
+                if (!userService.emailAlreadyExists(enteredEmail)) {
+                    LOGGER.log(Level.WARNING, "No user with this email exists");
+                    System.out.println("This email is not associated with any account !!");
+                    System.out.print("Please re-enter your email : ");
+                    continue;
+                }
+
+                emailInput = false;
+            }
+
+            boolean passwordInput = true;
+
+            String enteredPassword = null;
             System.out.print("Enter your password : ");
-            String enteredPassword = in.nextLine();
+            while (passwordInput) {
+
+                enteredPassword = in.nextLine();
+
+                if (enteredPassword.isEmpty()) {
+                    LOGGER.log(Level.WARNING, "Entered empty password.");
+                    System.out.println("Password cannot be empty.");
+                    System.out.print("Please re-enter your password : ");
+                    continue;
+                }
+
+
+                passwordInput = false;
+
+            }
+
             user = userService.login(enteredEmail, enteredPassword);
             System.out.println("Congratulations! You have successfully logged in");
             LOGGER.log(Level.INFO, "Login Successful");
@@ -374,82 +412,89 @@ public class Main {
 
     // cart menu
     private static void cartMenu() {
-        userService.showCartDetails(user);
-        boolean cartMenu = true;
-        while (cartMenu) {
-            try {
-                System.out.println("\n## MY CART ##\n");
-                System.out.println("What do you want to do with your cart?");
+        try {
+            userService.showCartDetails(user);
+            boolean cartMenu = true;
+            while (cartMenu) {
+                try {
+                    System.out.println("\n## MY CART ##\n");
+                    System.out.println("What do you want to do with your cart?");
 
-                System.out.println("1. Checkout");
-                System.out.println("2. Remove Item");
-                System.out.println("3. Return to home");
+                    System.out.println("1. Checkout");
+                    System.out.println("2. Remove Item");
+                    System.out.println("3. Return to home");
 
-                String cartChoice = in.nextLine();
+                    String cartChoice = in.nextLine();
 
-                switch (cartChoice) {
-                    // Checkout Cart
-                    case "1": {
-                        ArrayList<CartElement> cart = user.getCart();
-                        if (cart.isEmpty()) {
-                            System.out.println("Cart is empty!!");
-                            break;
-                        }
-                        userService.checkoutCart(user);
-                        System.out.println("Due bill : $" + user.getDueBill());
-                        cartMenu = false;
-                        break;
-                    }
-
-                    // Remove item from cart
-                    case "2": {
-                        ArrayList<CartElement> cart = user.getCart();
-                        if (cart.isEmpty()) {
-                            System.out.println("Cart is empty!!");
+                    switch (cartChoice) {
+                        // Checkout Cart
+                        case "1": {
+                            ArrayList<CartElement> cart = user.getCart();
+                            if (cart.isEmpty()) {
+                                System.out.println("Cart is empty!!");
+                                break;
+                            }
+                            userService.checkoutCart(user);
+                            System.out.println("Due bill : $" + user.getDueBill());
                             cartMenu = false;
                             break;
                         }
 
-                        // Dynamic rendering cart items
-                        System.out.println("Enter the choice you want to remove from cart: ");
-                        for (int i = 0; i < cart.size(); i++) {
-                            Product p = productService.getProductById(cart.get(i).getProductId());
-                            System.out.println((i + 1) + ". " + p.getName());
-                        }
-                        System.out.println(cart.size() + 1 + ". Return to Cart Menu");
+                        // Remove item from cart
+                        case "2": {
+                            ArrayList<CartElement> cart = user.getCart();
+                            if (cart.isEmpty()) {
+                                System.out.println("Cart is empty!!");
+                                cartMenu = false;
+                                break;
+                            }
 
-                        int removeChoice = Integer.parseInt(in.nextLine());
+                            // Dynamic rendering cart items
+                            System.out.println("Enter the choice you want to remove from cart: ");
+                            for (int i = 0; i < cart.size(); i++) {
+                                Product p = productService.getProductById(cart.get(i).getProductId());
+                                System.out.println((i + 1) + ". " + p.getName());
+                            }
+                            System.out.println(cart.size() + 1 + ". Return to Cart Menu");
 
-                        if (removeChoice >= 1 && removeChoice <= cart.size()) {
-                            int productId = cart.get(removeChoice - 1).getProductId();
-                            userService.removeFromCart(productId, user);
-                        } else if (removeChoice == cart.size() + 1) {
+                            int removeChoice = Integer.parseInt(in.nextLine());
+
+                            if (removeChoice >= 1 && removeChoice <= cart.size()) {
+                                int productId = cart.get(removeChoice - 1).getProductId();
+                                userService.removeFromCart(productId, user);
+                            } else if (removeChoice == cart.size() + 1) {
+                                break;
+                            } else {
+                                System.out.println("Choose a correct option");
+                            }
+
+                            userService.showCartDetails(user);
+
                             break;
-                        } else {
-                            System.out.println("Choose a correct option");
                         }
 
-                        userService.showCartDetails(user);
+                        // Return to Home
+                        case "3": {
+                            cartMenu = false;
+                            break;
+                        }
 
-                        break;
+                        // default
+                        default: {
+                            System.out.println("Choose a correct option !!");
+                            LOGGER.log(Level.WARNING, "Invalid option selected for switch");
+                        }
                     }
 
-                    // Return to Home
-                    case "3": {
-                        cartMenu = false;
-                        break;
-                    }
-
-                    // default
-                    default: {
-                        System.out.println("Choose a correct option !!");
-                        LOGGER.log(Level.WARNING, "Invalid option selected for switch");
-                    }
+                } catch (Exception error) {
+                    System.out.println(error.getLocalizedMessage());
+                    LOGGER.log(Level.SEVERE, "Exception : " + error);
                 }
-
-            } catch (Exception error) {
-                LOGGER.log(Level.SEVERE, "Exception : " + error);
             }
+
+        } catch (Exception error) {
+            System.out.println(error.getLocalizedMessage());
+            LOGGER.log(Level.SEVERE, "Exception : " + error);
         }
     }
 
@@ -457,8 +502,19 @@ public class Main {
     // add product menu
     private static void addProductMenu() {
         System.out.println("## ADD A PRODUCT FORM ##\n");
-        System.out.println("Enter product name :");
-        String name = in.nextLine();
+        
+        boolean productNameInput=true;
+        String name = null;
+        while(productNameInput){
+            System.out.println("Enter product name :");
+            name = in.nextLine();
+            
+            if(name.isEmpty()){
+                System.out.println("Product name cannot be empty !!");
+                LOGGER.log(Level.WARNING, "Entered empty product name");
+            }
+        }
+       
 
 
         boolean priceInput = true;
@@ -467,6 +523,9 @@ public class Main {
         while (priceInput) {
             try {
                 price = Double.parseDouble(in.nextLine());
+                if(price<=0.0){
+                    throw new Error("Price should be greater than 0.0");
+                }
                 priceInput = false;
             } catch (Exception error) {
                 LOGGER.log(Level.WARNING, "Invalid input for price");
@@ -572,7 +631,8 @@ public class Main {
             System.out.println("1. View by category");
             System.out.println("2. Sort and view products");
             System.out.println("3. Search products by keyword");
-            System.out.println(user != null ? "4. Return to home page" : "4. Go back");
+            System.out.println("4. Filter product by price");
+            System.out.println(user != null ? "5. Return to home page" : "4. Go back");
             String viewProductChoice = in.nextLine();
 
             try {
@@ -595,8 +655,14 @@ public class Main {
                         break;
                     }
 
-                    // Return to Home
+                    // Filter products
                     case "4": {
+                        productFilterMenu();
+                        break;
+                    }
+
+                    // Return to Home
+                    case "5": {
                         viewProductMenu = false;
                         break;
                     }
@@ -678,6 +744,39 @@ public class Main {
             LOGGER.log(Level.WARNING, "Empty input for keyword");
         }
 
+    }
+
+    // Filter product by price
+    private static void productFilterMenu() {
+        LOGGER.log(Level.INFO, "Successfully entered filter product by price");
+
+        boolean filterInput = true;
+        while (filterInput) {
+            try {
+                System.out.println("Enter minimum price :");
+                double min = Double.parseDouble(in.nextLine());
+
+                if (min < 0) {
+                    throw new Exception("Minimum price cannot be less than 0.");
+                }
+
+                System.out.println("Enter maximum price :");
+                double max = Double.parseDouble(in.nextLine());
+
+                if (max < 0) {
+                    throw new Exception("Maximum price cannot be less than 0.");
+                }
+
+                ArrayList<Product> products = productService.filterProducts(min, max);
+                productService.showAllProducts(products);
+
+                filterInput = false;
+
+            } catch (Exception error) {
+                System.out.println(error.getLocalizedMessage());
+                LOGGER.log(Level.WARNING, "Exception : " + error);
+            }
+        }
     }
 
 
@@ -805,6 +904,7 @@ public class Main {
 
 
                     if (user != null && !user.getIsAdmin()) {
+
                         addToCartMenu(product);
 
                     } else {
