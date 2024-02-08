@@ -1,5 +1,7 @@
 package services;
 
+import serialize.CategorySerializer;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger; // Import the AtomicInteger class
@@ -11,10 +13,7 @@ public class CategoryService {
     private static AtomicInteger nextId = new AtomicInteger(4);
 
     static {
-        categoryMap.put(1, "Gadgets");
-        categoryMap.put(2, "Food");
-        categoryMap.put(3, "Stationary");
-        categoryMap.put(4, "Furniture");
+        categoryMap = CategorySerializer.deserializeCategories();
     }
 
     public HashMap<Integer, String> getCategoryMap() {

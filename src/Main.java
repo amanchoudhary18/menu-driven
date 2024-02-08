@@ -3,6 +3,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import dto.*;
+import serialize.CategorySerializer;
+import serialize.ProductSerializer;
 import services.CategoryService;
 import services.ProductService;
 import services.UserService;
@@ -60,6 +62,26 @@ public class Main {
                     // Exit Case
                     case "4": {
                         System.out.println("Please come again :)");
+
+                        // Serializing product list
+                        try{
+                            ArrayList<Product> products = productService.getAllProducts();
+                            ProductSerializer.serializeProducts(products);
+                            LOGGER.log(Level.INFO,"Products are serialized");
+                        }catch(Exception error){
+                            LOGGER.log(Level.SEVERE,"Not able to serialize products");
+                        }
+
+                        // Serializing category list
+                        try{
+                            HashMap<Integer,String> categories = categoryService.getCategoryMap();
+                            CategorySerializer.serializeCategories(categories);
+                            LOGGER.log(Level.INFO,"Categories are serialized");
+                        }catch(Exception error){
+                            LOGGER.log(Level.SEVERE,"Not able to serialize categories");
+                        }
+
+
                         loginMenu = false;
                         break;
                     }
@@ -513,6 +535,7 @@ public class Main {
                 System.out.println("Product name cannot be empty !!");
                 LOGGER.log(Level.WARNING, "Entered empty product name");
             }
+            productNameInput=false;
         }
        
 
@@ -632,7 +655,7 @@ public class Main {
             System.out.println("2. Sort and view products");
             System.out.println("3. Search products by keyword");
             System.out.println("4. Filter product by price");
-            System.out.println(user != null ? "5. Return to home page" : "4. Go back");
+            System.out.println(user != null ? "5. Return to home page" : "5. Go back");
             String viewProductChoice = in.nextLine();
 
             try {

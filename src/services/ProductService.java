@@ -1,6 +1,7 @@
 package services;
 
 import dto.*;
+import serialize.ProductSerializer;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -31,23 +32,7 @@ public class ProductService {
 
     // static list dummy data
     static {
-        // Gadgets
-        products.add(new Product(1, "Smartphone", 500.0, "A high-end smartphone that is perfect for gaming, streaming, and multitasking.", 1));
-        products.add(new Product(2, "Laptop", 1000.0, "A powerful laptop that can handle all your work and entertainment needs.", 1));
-
-        // Grocery
-        products.add(new Product(3, "Pizza", 10.0, "A delicious pizza that is perfect for a quick meal or a party.", 2));
-        products.add(new Product(4, "Burger", 5.0, "A juicy burger that is perfect for a quick snack or a meal.", 2));
-        products.add(new Product(7, "Milk", 2.0, "A gallon of milk that is perfect for your daily needs.", 2));
-        products.add(new Product(8, "Bread", 1.0, "A loaf of bread that is perfect for sandwiches or toast.", 2));
-
-        // Stationary
-        products.add(new Product(5, "Pen", 1.0, "A ballpoint pen that is perfect for writing notes or signing documents.", 3));
-        products.add(new Product(6, "Notebook", 2.0, "A spiral notebook that is perfect for taking notes or keeping a journal.", 3));
-
-        // Furniture
-        products.add(new Product(9, "Bed", 500.0, "A sturdy double bed that is perfect for a good night's sleep.", 4));
-        products.add(new Product(10, "Table", 200.0, "A wooden study table that is perfect for working or studying.", 4));
+        products = ProductSerializer.deserializeProducts();
     }
 
     // fetch all products
