@@ -12,12 +12,14 @@ public class UserService {
     private final static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     // static user database
     static HashMap<String, User> userMap = new HashMap<>();
-    private final static String EMAIL_REGEX = "^[a-zA-Z0-9_!#$%&’*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
+    private final static String EMAIL_REGEX = "^[a-zA-Z0-9][a-zA-Z0-9_!#$%&’*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
     private final static String SECRET_KEY = "E-Comm#Fastenal";
 
     // dummy user data
+
+
     static {
-        userMap.put("aman.choudhary9785@gmail.com", new User("Aman Choudhary", "aman.choudhary9785@gmail.com", "Aman123", true));
+        userMap.put("aman.choudhary9785@gmail.com", new User("Aman Choudhary", "aman.choudhary9785@gmail.com", "Aman123", false));
     }
 
 
@@ -157,12 +159,13 @@ public class UserService {
     }
 
     public void showCartDetails(User user) throws Exception{
-        System.out.println(user.getName());
         ArrayList<CartElement> cart = user.getCart();
         ProductService productService = new ProductService();
 
         if (cart.isEmpty()) {
-            System.out.println("Enter some items in the cart");
+            System.out.println("Enter some items in the cart !!");
+            System.out.println();
+            throw new Exception("Cart is Empty");
         } else {
             double totalAmt = 0;
 

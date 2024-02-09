@@ -64,21 +64,21 @@ public class Main {
                         System.out.println("Please come again :)");
 
                         // Serializing product list
-                        try{
+                        try {
                             ArrayList<Product> products = productService.getAllProducts();
                             ProductSerializer.serializeProducts(products);
-                            LOGGER.log(Level.INFO,"Products are serialized");
-                        }catch(Exception error){
-                            LOGGER.log(Level.SEVERE,"Not able to serialize products");
+                            LOGGER.log(Level.INFO, "Products are serialized");
+                        } catch (Exception error) {
+                            LOGGER.log(Level.SEVERE, "Not able to serialize products");
                         }
 
                         // Serializing category list
-                        try{
-                            HashMap<Integer,String> categories = categoryService.getCategoryMap();
+                        try {
+                            HashMap<Integer, String> categories = categoryService.getCategoryMap();
                             CategorySerializer.serializeCategories(categories);
-                            LOGGER.log(Level.INFO,"Categories are serialized");
-                        }catch(Exception error){
-                            LOGGER.log(Level.SEVERE,"Not able to serialize categories");
+                            LOGGER.log(Level.INFO, "Categories are serialized");
+                        } catch (Exception error) {
+                            LOGGER.log(Level.SEVERE, "Not able to serialize categories");
                         }
 
 
@@ -116,9 +116,27 @@ public class Main {
                     case "1": {
                         System.out.println("\n## ENTER YOUR REGISTRATION DETAILS ##\n");
 
-                        System.out.print("Enter your name : ");
-                        String enteredName = in.nextLine();
+                        // name input
+                        boolean nameInput = true;
+                        String enteredName = null;
 
+                        while (nameInput) {
+                            System.out.print("Enter your name : ");
+                            enteredName = in.nextLine();
+
+                            if (enteredName.isBlank()) {
+                                LOGGER.log(Level.WARNING, "Name cannot be empty");
+                                System.out.println("Name cannot be empty");
+
+                                continue;
+                            }
+
+
+                            nameInput = false;
+                        }
+
+
+                        // email input
                         boolean emailInput = true;
 
                         String enteredEmail = null;
@@ -143,6 +161,7 @@ public class Main {
 
                         }
 
+                        // password input
                         boolean passwordInput = true;
 
                         String enteredPassword = null;
@@ -159,6 +178,9 @@ public class Main {
                             passwordInput = false;
 
                         }
+
+                        // secret key input
+
                         System.out.print("Enter company key to initiate account creation : ");
                         String secretKey = in.nextLine();
 
@@ -177,9 +199,25 @@ public class Main {
                     case "2": {
                         System.out.println("\n## ENTER YOUR REGISTRATION DETAILS ##\n");
 
-                        System.out.print("Enter your name : ");
-                        String enteredName = in.nextLine();
+                        // name input
+                        boolean nameInput = true;
+                        String enteredName = null;
 
+                        while (nameInput) {
+                            System.out.print("Enter your name : ");
+                            enteredName = in.nextLine();
+
+                            if (enteredName.isBlank()) {
+                                LOGGER.log(Level.WARNING, "Name cannot be empty");
+                                System.out.println("Name cannot be empty");
+                                continue;
+                            }
+
+                            nameInput = false;
+                        }
+
+
+                        // email input
                         boolean emailInput = true;
 
                         String enteredEmail = null;
@@ -201,10 +239,10 @@ public class Main {
                             }
 
                             emailInput = false;
-                            accountMenu = false;
 
                         }
 
+                        // password input
                         boolean passwordInput = true;
 
                         String enteredPassword = null;
@@ -214,6 +252,7 @@ public class Main {
                             enteredPassword = in.nextLine();
 
                             if (!userService.validatePassword(enteredPassword)) {
+
                                 System.out.print("Please re-enter your password : ");
                                 continue;
                             }
@@ -435,11 +474,12 @@ public class Main {
     // cart menu
     private static void cartMenu() {
         try {
-            userService.showCartDetails(user);
+            System.out.println("\n## MY CART ##\n");
             boolean cartMenu = true;
             while (cartMenu) {
                 try {
-                    System.out.println("\n## MY CART ##\n");
+
+                    userService.showCartDetails(user);
                     System.out.println("What do you want to do with your cart?");
 
                     System.out.println("1. Checkout");
@@ -511,6 +551,7 @@ public class Main {
                 } catch (Exception error) {
                     System.out.println(error.getLocalizedMessage());
                     LOGGER.log(Level.SEVERE, "Exception : " + error);
+                    cartMenu = false;
                 }
             }
 
@@ -524,20 +565,20 @@ public class Main {
     // add product menu
     private static void addProductMenu() {
         System.out.println("## ADD A PRODUCT FORM ##\n");
-        
-        boolean productNameInput=true;
+
+        boolean productNameInput = true;
         String name = null;
-        while(productNameInput){
+        while (productNameInput) {
             System.out.println("Enter product name :");
             name = in.nextLine();
-            
-            if(name.isEmpty()){
+
+            if (name.isBlank()) {
                 System.out.println("Product name cannot be empty !!");
                 LOGGER.log(Level.WARNING, "Entered empty product name");
+                continue;
             }
-            productNameInput=false;
+            productNameInput = false;
         }
-       
 
 
         boolean priceInput = true;
@@ -546,7 +587,7 @@ public class Main {
         while (priceInput) {
             try {
                 price = Double.parseDouble(in.nextLine());
-                if(price<=0.0){
+                if (price <= 0.0) {
                     throw new Error("Price should be greater than 0.0");
                 }
                 priceInput = false;
@@ -791,7 +832,7 @@ public class Main {
                 }
 
                 ArrayList<Product> products = productService.filterProducts(min, max);
-                productService.showAllProducts(products);
+                showProductMenus(products);
 
                 filterInput = false;
 
@@ -968,16 +1009,30 @@ public class Main {
                 switch (addToCartChoice) {
                     // Add to cart
                     case "1": {
-                        System.out.println("Enter quantity");
-                        int quantity = Integer.parseInt(in.nextLine());
 
-                        int productId = product.getId();
-                        userService.addToCart(productId, quantity, user);
+                        boolean quantityInput = true;
+                        while (quantityInput) {
+                            try {
+                                System.out.println("Enter quantity");
+                                int quantity = Integer.parseInt(in.nextLine());
+                                if(quantity<1) {
+                                    throw new Exception("Quantity cannot be less than 1");
+                                }
+                                int productId = product.getId();
+                                userService.addToCart(productId, quantity, user);
 
-                        System.out.println("Added to cart! Wohooo");
-                        userService.showCartDetails(user);
-                        LOGGER.log(Level.INFO, "Successfully added to cart");
-                        addToCartMenu = false;
+                                System.out.println("Added to cart! Wohooo");
+                                userService.showCartDetails(user);
+                                LOGGER.log(Level.INFO, "Successfully added to cart");
+                                quantityInput = false;
+
+                            } catch (Exception error) {
+                                System.out.println(error.getLocalizedMessage());
+                                LOGGER.log(Level.WARNING, "Exception : " + error);
+                            }
+                        }
+
+
                         break;
                     }
 

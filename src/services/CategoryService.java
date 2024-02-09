@@ -13,6 +13,7 @@ public class CategoryService {
     private static AtomicInteger nextId = new AtomicInteger(4);
 
     static {
+        // deserialization
         categoryMap = CategorySerializer.deserializeCategories();
     }
 

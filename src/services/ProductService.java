@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicInteger;
 
+
 public class ProductService {
 
     // comparator inner class for price
@@ -19,7 +20,7 @@ public class ProductService {
     // comparator inner class for name
     static class AlphabeticComparator implements Comparator<Product> {
         public int compare(Product p1, Product p2) {
-            return p1.getName().compareTo(p2.getName());
+            return p1.getName().toLowerCase().compareTo(p2.getName().toLowerCase());
         }
     }
 
@@ -135,6 +136,7 @@ public class ProductService {
     }
 
     // search products using keywords
+
     public ArrayList<Product> searchByKeyword(String key) {
         ArrayList<Product> searchedProducts = new ArrayList<>();
         for (Product product : products) {
@@ -146,16 +148,71 @@ public class ProductService {
         return searchedProducts;
     }
 
-    //filter products based on price
-    public ArrayList<Product> filterProducts(double min,double max) throws Exception{
+    // using 3 threads to search product by keyword
+//    public ArrayList<Product> searchByKeyword(String key) {
+//        final int threadCount = 3;
+//
+//        ArrayList<Product> searchedProducts = new ArrayList<>();
+//
+//        ArrayList<Product> part1 = new ArrayList<>();
+//        ArrayList<Product> part2 = new ArrayList<>();
+//        ArrayList<Product> part3 = new ArrayList<>();
+//
+//        // dividing into 3 parts
+//        for (int i = 0; i < products.size(); i++) {
+//            if (i < (int) (Math.ceil((double) products.size() / threadCount))) {
+//                part1.add(products.get(i));
+//            } else if (i >= (int) (Math.ceil((double) products.size() / threadCount)) && i < 2 * (int) (Math.ceil((double) products.size() / threadCount))) {
+//                part2.add(products.get(i));
+//            } else {
+//                part3.add(products.get(i));
+//            }
+//        }
+//
+//        // maintain an array of threads
+//        ArrayList<Thread> searchThreads = new ArrayList<>();
+//
+//        for (int i = 0; i < threadCount; i++) {
+//            ArrayList<Product> selectedPart = (i==0)?part1:i==1?part2:part3;
+//            Thread thread = new Thread(() -> {
+//                for (Product product : selectedPart) {
+//                    if (product.getName().toLowerCase().contains(key.toLowerCase()) || product.getDescription().toLowerCase().contains(key.toLowerCase())) {
+//                        synchronized (searchedProducts) {
+//                            searchedProducts.add(product);
+//                        }
+//                    }
+//                }
+//            });
+//            searchThreads.add(thread);
+//            thread.start();
+//        }
+//
+//
+//        // Wait for all threads to finish
+//        searchThreads.forEach(thread -> {
+//            try {
+//                thread.join();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        });
+//
+//
+//        return searchedProducts;
+//    }
 
-        if(min>max){
+
+
+    // filter products based on price
+    public ArrayList<Product> filterProducts(double min, double max) throws Exception {
+
+        if (min > max) {
             throw new Exception("Maximum price cannot be less than minimum price.");
         }
 
         ArrayList<Product> filteredProducts = new ArrayList<>();
         for (Product product : products) {
-            if (product.getPrice()>=min  && product.getPrice()<=max) {
+            if (product.getPrice() >= min && product.getPrice() <= max) {
                 filteredProducts.add(product);
             }
         }
